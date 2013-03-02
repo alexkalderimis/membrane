@@ -1,0 +1,24 @@
+{
+  "name": "membrane",
+  "description": "A module builder with an emphais on encapsulation",
+  "version": "0.0.1",
+  "keywords": [
+    "development",
+    "encapsulation"
+  ],
+  "bugs": {
+    "url": "http://github.com/owner/project/issues",
+    "email": "project@hostname.com"
+  },
+  "bin": {
+    "membrane": "bin/run.js"
+  },
+  "main": "membrane.js",
+  "devDependencies": {
+    "coffee-script": ">=1.5.0",
+    "grunt": "~0.4.0",
+    "mocha": "~1.8.0",
+    "chai": "latest",
+    "grunt-simple-mocha": "~0.3.2"
+  }
+}
