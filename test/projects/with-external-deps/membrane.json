@@ -1,0 +1,21 @@
+{
+  "src": "src",
+  "filename": "with-deps.js",
+  "organelles": [
+   {
+     "name": "foo",
+     "src": "lib/foo.coffee",
+     "root": "Foo"
+   },
+   {
+     "name": "bar",
+     "src": "lib/bar.coffee",
+     "root": "Bar"
+   },
+   {
+     "name": "quux",
+     "src": "lib/quux.js",
+     "root": "Quux"
+   }
+  ]
+}
