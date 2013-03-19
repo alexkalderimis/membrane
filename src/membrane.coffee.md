@@ -19,10 +19,14 @@ goodness, and provide sugar for standard access.
     writeP = Q.nfbind fs.writeFile
     getWriter = (filename) -> (data, enc = 'utf8') -> writeP filename, data, enc
 
-    compile = (filename, opts) -> read(filename).then (text) ->
-      opts ?= {bare: true}
-      text = "-> (#{ text })" unless text.match(/^\s*using/)
-      cs.compile text, _.extend {filename, literate: cs.helpers.isLiterate filename}, opts
+    compile = (filename, opts = {}) -> read(filename).then (text) ->
+      if opts.isNative
+        _.defaults opts, {bare: true}
+        text = "-> (#{ text })" unless text.match(/^\s*using/)
+      try
+        cs.compile text, _.extend {filename, literate: cs.helpers.isLiterate filename}, opts
+      catch e
+        throw new Error("Could not compile #{ filename }: \n #{e} \n#{ text }")
 
 
 In addition to these simple `fs` wrappers, we also need a function for reading
@@ -71,7 +75,7 @@ definitions and re-export them into the library.
           , module = context
           , require = __our_require__;
         var ret = (function() { return #{ b.js };}).call(context);
-        return ret || module['#{b.root }'] || context;
+        return ret || context['#{b.root }'] || module.exports || context;
       });
     """
 
@@ -82,7 +86,7 @@ We export the `envelop` function, which builds a bundle.
 It does this by first compiling all code to javascript, if it isn't that already.
 
       promises = for o in organelles then do (o) ->
-        f = if IS_JS.test o.src then read else compile
+        f = if IS_JS.test o.src then read else (fn) -> compile fn, o
         f(o.src).then (js) -> _.extend {js, root: o.root or o.name}, o
 
 The prelude is the module code from this library.
@@ -94,7 +98,7 @@ a bit of text transformation on each part, followed by concatenation and wrappin
 
       Q.all(promises)
        .then((bundles) -> bundles.map bundle)
-       .then((sections) -> compile(prelude).then (pre) -> [pre, sections...,])
+       .then((sections) -> compile(prelude, bare: true).then (pre) -> [pre, sections...,])
        .then((sections) -> wrap sections.join('\n'))
        
 
