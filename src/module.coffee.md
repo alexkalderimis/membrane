@@ -7,11 +7,15 @@ wrapped into a membrane.
 It exposes three functions to the code within its membrane:
 * `define` is used for defining a section of code.
 * `using` is used for declaring dependencies.
-* `require` is made available for modules that need to call it.
 
     define = ->
     using = ->
-    require = ->
+
+* `require` is made available for modules that need to call it, and it saves the previous value
+  of that name.
+
+    __real_require__ = require
+    __our_require__ = ->
 
 One further function is exposed, but it is not part of the public api.
 
@@ -33,7 +37,8 @@ And an object used as a semaphore for the pending state.
 Require is the simplest. It just gets the named module, or throws an error if it
 cannot be fetched.
 
-      require = (name) -> defined_modules[name] or throw new Error "Cannot find required module #{ name }"
+      __our_require__ = (name) ->
+        defined_modules[name] or __real_require__?(name) or throw new Error "Cannot find required module #{ name }"
 
 Then we define a function whose job it is to promote all pending definitions
 to real definitions if their dependencies can be met. We determine whether
@@ -72,7 +77,7 @@ semaphore if the requirements are not met, or the newly defined object.
 
       using = (names..., f) -> (eof = false) ->
         objs = (defined_modules[name] for name in names when name of defined_modules)
-        if obj.length is names.length
+        if objs.length is names.length
           f objs...
         else if eof
           (name for name in names when name not of defined_modules)
