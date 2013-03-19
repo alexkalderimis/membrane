@@ -2,7 +2,6 @@ using 'foo', 'bar', (Foo, Bar) ->
 
   expect = require('chai').expect
 
-  console.log(Foo, Bar)
 
   describe 'A file which imported its modules', ->
     it "should have access to the modules", ->
