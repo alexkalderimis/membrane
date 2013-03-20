@@ -19,6 +19,10 @@ goodness, and provide sugar for standard access.
     writeP = Q.nfbind fs.writeFile
     getWriter = (filename) -> (data, enc = 'utf8') -> writeP filename, data, enc
 
+The coffee-script compiler is wrapped to make it asynchronous, and we introduce
+special handling for locally defined files. We expect that files contained
+within a membrane encapsulated library are written to the membrane API.
+
     compile = (filename, opts = {}) -> read(filename).then (text) ->
       if opts.isNative
         _.defaults opts, {bare: true}
@@ -27,7 +31,6 @@ goodness, and provide sugar for standard access.
         cs.compile text, _.extend {filename, literate: cs.helpers.isLiterate filename}, opts
       catch e
         throw new Error("Could not compile #{ filename }: \n #{e} \n#{ text }")
-
 
 In addition to these simple `fs` wrappers, we also need a function for reading
 all the files in a directory, recursively.
