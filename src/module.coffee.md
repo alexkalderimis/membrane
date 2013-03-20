@@ -12,7 +12,8 @@ It exposes three functions to the code within its membrane:
     using = ->
 
 * `require` is made available for modules that need to call it, and it saves the previous value
-  of that name.
+  of that name. We keep ours under a different name and only rename it when
+  wrapping other libraries.
 
     __real_require__ = require
     __our_require__ = ->
