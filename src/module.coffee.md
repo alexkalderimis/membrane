@@ -10,6 +10,7 @@ It exposes three functions to the code within its membrane:
 
     define = ->
     using = ->
+    expose = ->
 
 * `require` is made available for modules that need to call it, and it saves the previous value
   of that name. We keep ours under a different name and only rename it when
@@ -95,3 +96,13 @@ created due to missing dependencies.
           err = "The following modules have unmet dependencies"
           problems = ("#{ name } needs [#{ pending_modules[name] true }]" for name in still_pending)
           throw new Error "#{ err }: #{ problems.join ', ' }"
+
+We also provide a function for exposing elements to the external
+world safely.
+
+      expose = (path, obj) ->
+        parts = path.split /\./
+        root = exports ? this
+        target = parts.reduce ((o, part) -> o[part] ?= {}), root
+        for k, v of obj
+          target[k] = v
