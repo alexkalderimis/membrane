@@ -19,6 +19,8 @@ goodness, and provide sugar for standard access.
     writeP = Q.nfbind fs.writeFile
     getWriter = (filename) -> (data, enc = 'utf8') -> writeP filename, data, enc
 
+    helperRE = /^\s*(var)?\s*__(hasProp|extends|slice|bind)\s*=.*$/gm
+
 The coffee-script compiler is wrapped to make it asynchronous, and we introduce
 special handling for locally defined files. We expect that files contained
 within a membrane encapsulated library are written to the membrane API.
@@ -26,9 +28,15 @@ within a membrane encapsulated library are written to the membrane API.
     compile = (filename, opts = {}) -> read(filename).then (text) ->
       if opts.isNative
         _.defaults opts, {bare: true}
-        text = "-> (#{ text })" unless text.match(/^\s*using/)
+        text = if text.match /^\s*using/
+          text
+        else if text.match /using/
+          "do -> (#{ text })" # Make the using statement the value of this.
+        else
+          "-> (#{ text })" # Force a return statment
       try
-        cs.compile text, _.extend {filename, literate: cs.helpers.isLiterate filename}, opts
+        js = cs.compile text, _.extend {filename, literate: cs.helpers.isLiterate filename}, opts
+        if opts.prelude then js else js.replace(helperRE, '').replace(/^\s*/, '')
       catch e
         throw new Error("Could not compile #{ filename }: \n #{e} \n#{ text }")
 
@@ -57,7 +65,7 @@ is called
         #{ code };
         __end_of_definitions__();
       }).call();
-    """
+     """
 
 We bundle up each section of the code in such a way that we can isolate its
 definitions and re-export them into the library.
@@ -101,7 +109,7 @@ a bit of text transformation on each part, followed by concatenation and wrappin
 
       Q.all(promises)
        .then((bundles) -> bundles.map bundle)
-       .then((sections) -> compile(prelude, bare: true).then (pre) -> [pre, sections...,])
+       .then((sections) -> compile(prelude, bare: true, prelude: true).then (pre) -> [pre, sections...,])
        .then((sections) -> wrap sections.join('\n'))
        
 

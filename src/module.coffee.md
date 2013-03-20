@@ -106,3 +106,15 @@ world safely.
         target = parts.reduce ((o, part) -> o[part] ?= {}), root
         for k, v of obj
           target[k] = v
+
+Here are a number of dummy uses of coffee script to provoke the compiler to emit the
+helper methods.
+
+        class __dummy__
+        
+        class __dummy2__ extends __dummy__
+
+        [__head__, __middle__..., __tail__] = [1 .. 10]
+
+        f = => null
+
